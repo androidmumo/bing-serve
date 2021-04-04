@@ -19,6 +19,7 @@
   "homepage": "https://github.com/androidmumo/bing-serve#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "request": "^2.88.2"
   }
 }
