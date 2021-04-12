@@ -18,8 +18,10 @@
   },
   "homepage": "https://github.com/androidmumo/bing-serve#readme",
   "dependencies": {
+    "axios": "^0.21.1",
+    "dayjs": "^1.10.4",
     "express": "^4.17.1",
-    "mysql": "^2.18.1",
-    "request": "^2.88.2"
+    "jimp": "^0.16.1",
+    "mysql": "^2.18.1"
   }
 }
