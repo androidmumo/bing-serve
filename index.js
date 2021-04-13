@@ -1,6 +1,14 @@
 // 导入配置文件
 const { base, database } = require("./config/config");
 
+// 导入模块
+const {
+  processImageGrey,
+  processImageGauss,
+  processImageResize,
+} = require("./model/processImage");
+const { logger } = require("./model/log4js");
+
 // 设置express框架
 const express = require("express");
 const app = new express();
@@ -13,13 +21,10 @@ const fs = require("fs");
 const axios = require("axios");
 const mysql = require("mysql");
 const dayjs = require("dayjs");
-const Jimp = require("jimp");
 
 // ------ 逻辑代码 start------
 // 定义变量
-let log = "";
 let bingJson = {};
-let nowTime = "";
 let saveDir = "";
 
 // 创建一个数据库连接池
@@ -30,7 +35,7 @@ const addContent = function (sql, sqlParams, req, res, callback) {
   //使用
   pool.getConnection((err, connection) => {
     if (err) {
-      console.log("连接失败：" + err);
+      logger.error("数据库连接失败 " + err);
       res.json({
         code: 50000,
         msg: "服务器内部错误！请联系管理员。",
@@ -38,7 +43,7 @@ const addContent = function (sql, sqlParams, req, res, callback) {
     } else {
       connection.query(sql, sqlParams, function (err, result) {
         if (err) {
-          console.log("[ERROR] - ", err.message);
+          logger.error("数据库错误 " + err.message);
           res.json({
             code: 50000,
             msg: "服务器内部错误！请联系管理员。",
@@ -53,14 +58,6 @@ const addContent = function (sql, sqlParams, req, res, callback) {
   });
 };
 
-// 写入日志文件
-const createLogFile = function (log) {
-  let writeStream = fs.createWriteStream(
-    `${saveDir}/${dayjs(nowTime).format("YYYY-MM-DD")}_log.txt`
-  );
-  writeStream.write(log);
-};
-
 // 请求接口 获取bing官方JSON数据
 const getBingJson = async function () {
   await axios({
@@ -69,7 +66,9 @@ const getBingJson = async function () {
       "https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN",
   }).then((response) => {
     bingJson = response.data;
-    log += `${dayjs().format("YYYY-MM-DD HH:mm:ss:SSS")} 获取bingJson成功\n`;
+    logger.info("获取bingJson成功");
+  }).catch(err => {
+    logger.error("获取bingJson失败 " + err);
   });
 };
 
@@ -77,142 +76,54 @@ const getBingJson = async function () {
 const createDirectory = async function (dir, recursive) {
   await fs.mkdir(dir, { recursive }, function (error) {
     if (error) {
-      console.log(error);
-      log += `${dayjs().format(
-        "YYYY-MM-DD HH:mm:ss:SSS"
-      )} 创建目录失败: ${error}\n`;
+      logger.error("创建目录失败 " + error);
       return false;
     }
-    log += `${dayjs().format(
-      "YYYY-MM-DD HH:mm:ss:SSS"
-    )} 创建目录成功: ${dir}\n`;
+    logger.info("创建目录成功: " + dir);
   });
 };
 
 // 下载图片
-const downloadImage = async function (imgUrl, saveDir) {
+const downloadImage = async function (imgUrl, saveUrl) {
   await axios({
     method: "get",
     url: imgUrl,
     responseType: "stream",
   }).then(function (response) {
-    response.data.pipe(fs.createWriteStream(saveDir));
-    log += `${dayjs().format(
-      "YYYY-MM-DD HH:mm:ss:SSS"
-    )} 图片下载成功: ${imgUrl}\n`;
+    response.data.pipe(fs.createWriteStream(saveUrl));
+    logger.info("图片下载成功: " + imgUrl);
   });
 };
 
-// 处理图片 灰度
-const processImageGrey = function ({ quality }) {
-  Jimp.read(`${saveDir}/${dayjs(nowTime).format("YYYY-MM-DD")}_hd.jpg`)
-    .then((img) => {
-      return img
-        .greyscale() // set greyscale
-        .quality(quality)
-        .write(
-          `${saveDir}/${dayjs(nowTime).format("YYYY-MM-DD")}_hd_greyscale.jpg`
-        ); // save
-    })
-    .catch((err) => {
-      log += `${dayjs().format(
-        "YYYY-MM-DD HH:mm:ss:SSS"
-      )} 图片处理失败: 灰度 ${err}\n`;
-      createLogFile(log);
-    })
-    .then(() => {
-      log += `${dayjs().format(
-        "YYYY-MM-DD HH:mm:ss:SSS"
-      )} 图片处理成功: 灰度\n`;
-      createLogFile(log);
-    });
-};
-
-// 处理图片 高斯模糊
-const processImageGauss = function (pixels, { quality }) {
-  Jimp.read(`${saveDir}/${dayjs(nowTime).format("YYYY-MM-DD")}_hd.jpg`)
-    .then((img) => {
-      return img
-        .quality(quality)
-        .gaussian(pixels) // set greyscale
-        .write(
-          `${saveDir}/${dayjs(nowTime).format(
-            "YYYY-MM-DD"
-          )}_hd_gaussian_${pixels}.jpg`
-        ); // save
-    })
-    .catch((err) => {
-      log += `${dayjs().format(
-        "YYYY-MM-DD HH:mm:ss:SSS"
-      )} 图片处理失败: 高斯模糊 ${err}\n`;
-      createLogFile(log);
-    })
-    .then(() => {
-      log += `${dayjs().format(
-        "YYYY-MM-DD HH:mm:ss:SSS"
-      )} 图片处理成功: 高斯模糊${pixels}\n`;
-      createLogFile(log);
-    });
-};
-
-// 处理图片 缩放 质量 (参数base64若为true，则产生base64编码的图片)
-const processImageResize = function (width, height, { quality, base64 }) {
-  Jimp.read(`${saveDir}/${dayjs(nowTime).format("YYYY-MM-DD")}_hd.jpg`)
-    .then((img) => {
-      return base64
-        ? img
-            .resize(width, height) // set greyscale
-            .quality(quality)
-            .getBase64(Jimp.AUTO, (err, base64Image) => {
-              console.log(base64Image);
-            })
-        : img
-            .resize(width, height) // set greyscale
-            .quality(quality)
-            .write(
-              `${saveDir}/${dayjs(nowTime).format(
-                "YYYY-MM-DD"
-              )}_hd_thumbnail_${width}_${height}.jpg`
-            ); // save
-    })
-    .catch((err) => {
-      log += `${dayjs().format(
-        "YYYY-MM-DD HH:mm:ss:SSS"
-      )} 图片处理失败: 缩放 ${err}\n`;
-      createLogFile(log);
-    })
-    .then(() => {
-      log += `${dayjs().format(
-        "YYYY-MM-DD HH:mm:ss:SSS"
-      )} 图片处理成功: 缩放 ${width} ${height}\n`;
-      createLogFile(log);
-    });
+// 并发处理图片
+const processImage = function (saveDir) {
+  processImageGrey(saveDir, { quality: 90 });
+  processImageResize(saveDir, { width: 16, height: 9, quality: 90, base64: true });
+  processImageResize(saveDir, { width: 480, height: 270, quality: 90, base64: false });
+  // processImageGauss(saveDir, { pixels: 20, quality: 90 });
 };
 
 // ------ 逻辑代码 end------
 
 // ------ 接口 start------
 app.get("/update", async function (req, res) {
-  nowTime = new Date();
-  saveDir = `${dir}/${dayjs(nowTime).format("YYYY")}/${dayjs(nowTime).format(
+  saveDir = `${dir}/${dayjs().format("YYYY")}/${dayjs().format(
     "MM"
-  )}/${dayjs(nowTime).format("DD")}`;
-  log = `当前时间(nowTime): ${nowTime}\n保存目录: ${saveDir}\n`;
+  )}/${dayjs().format("DD")}`;
+  logger.info("当前时间: " + dayjs());
+  logger.info("保存目录: " + saveDir);
   await getBingJson();
   await createDirectory(saveDir, true);
   await downloadImage(
     "https://cn.bing.com" + bingJson.images[0].url,
-    `${saveDir}/${dayjs(nowTime).format("YYYY-MM-DD")}_hd.jpg`
+    `${saveDir}/${dayjs().format("YYYY-MM-DD")}_hd.jpg`
   );
   await downloadImage(
     "https://cn.bing.com" + bingJson.images[0].urlbase + "_UHD.jpg",
-    `${saveDir}/${dayjs(nowTime).format("YYYY-MM-DD")}_uhd.jpg`
+    `${saveDir}/${dayjs().format("YYYY-MM-DD")}_uhd.jpg`
   );
-  await processImageGrey({ quality: 90 });
-  await processImageGauss(20, { quality: 90 });
-  await processImageResize(16, 9, { quality: 90, base64: true });
-  await processImageResize(480, 270, { quality: 90, base64: false });
-  res.send(log);
+  processImage(saveDir);
+  res.send("正在处理中");
   // let sql = `SELECT * FROM account WHERE username='1'`;
   // addContent(sql, null, req, res, (result) => {
   //   // result = JSON.parse(result);
@@ -246,5 +157,5 @@ app.get("/update", async function (req, res) {
 
 // 开始监听
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  logger.info(`app listening at http://localhost:${port}`);
 });
