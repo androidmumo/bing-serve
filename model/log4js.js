@@ -1,3 +1,6 @@
+// 日志模块
+
+// 导入第三方模块
 const log4js = require("log4js");
 
 log4js.configure({
