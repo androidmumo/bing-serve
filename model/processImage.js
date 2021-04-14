@@ -6,21 +6,37 @@ const { logger } = require("./log4js"); // 日志模块
 // 导入第三方模块
 const dayjs = require("dayjs");
 const Jimp = require("jimp");
+const Vibrant = require("node-vibrant");
+
+// ------ 逻辑函数 start ------
+// 16进制转换
+function componentToHex(num) {
+  var hex = num.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+// 将rgb颜色转换为16进制颜色
+function rgbToHex([r, g, b]) {
+  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+// ------ 逻辑函数 end ------
 
 // 处理图片 灰度
 const processImageGrey = function (saveDir, { quality }) {
   Jimp.read(`${saveDir}/${dayjs().format("YYYY-MM-DD")}_hd.jpg`)
     .then((img) => {
       return img
-        .greyscale() // set greyscale
+        .greyscale()
         .quality(quality)
-        .write(`${saveDir}/${dayjs().format("YYYY-MM-DD")}_hd_greyscale.jpg`); // save
+        .write(
+          `${saveDir}/${dayjs().format("YYYY-MM-DD")}_hd_greyscale.jpg`,
+          () => {
+            logger.info("图片处理成功: 灰度");
+          }
+        );
     })
     .catch((err) => {
       logger.error("图片处理失败: 灰度 " + err);
-    })
-    .then(() => {
-      logger.info("图片处理成功: 灰度");
     });
 };
 
@@ -30,16 +46,18 @@ const processImageGauss = function (saveDir, { pixels, quality }) {
     .then((img) => {
       return img
         .quality(quality)
-        .gaussian(pixels) // set greyscale
+        .gaussian(pixels)
         .write(
-          `${saveDir}/${dayjs().format("YYYY-MM-DD")}_hd_gaussian_${pixels}.jpg`
-        ); // save
+          `${saveDir}/${dayjs().format(
+            "YYYY-MM-DD"
+          )}_hd_gaussian_${pixels}.jpg`,
+          () => {
+            logger.info("图片处理成功: 高斯模糊");
+          }
+        );
     })
     .catch((err) => {
       logger.error("图片处理失败: 高斯模糊 " + err);
-    })
-    .then(() => {
-      logger.info("图片处理成功: 高斯模糊");
     });
 };
 
@@ -48,38 +66,60 @@ const processImageResize = function (saveDir, { width, height, quality }) {
   Jimp.read(`${saveDir}/${dayjs().format("YYYY-MM-DD")}_hd.jpg`)
     .then((img) => {
       return img
-        .resize(width, height) // set greyscale
+        .resize(width, height)
         .quality(quality)
         .write(
           `${saveDir}/${dayjs().format(
             "YYYY-MM-DD"
-          )}_hd_thumbnail_${width}_${height}.jpg`
-        ); // save
+          )}_hd_thumbnail_${width}_${height}.jpg`,
+          () => {
+            logger.info(`图片处理成功: 缩放 width:${width} height:${height}`);
+          }
+        );
     })
     .catch((err) => {
       logger.error("图片处理失败: 缩放 " + err);
-    })
-    .then(() => {
-      logger.info(`图片处理成功: 缩放 width:${width} height:${height}`);
     });
 };
 
 // 处理图片 base64编码
-const processImageBase64 = function (saveDir, { width, height, quality }) {
+const getImageBase64 = function (saveDir, { width, height, quality }) {
   return new Promise((resolve, reject) => {
     Jimp.read(`${saveDir}/${dayjs().format("YYYY-MM-DD")}_hd.jpg`)
       .then((img) => {
+        //   console.log(img.hash())
         return img
           .resize(width, height) // set greyscale
           .quality(quality)
           .getBase64(Jimp.AUTO, (err, base64Image) => {
+            logger.info("图片处理成功: base64");
             resolve(base64Image);
           });
       })
       .catch((err) => {
-        logger.error("图片处理失败: 缩放 " + err);
+        logger.error("图片处理失败: base64 " + err);
         reject(err);
       });
+  });
+};
+
+// 获取图片的主要颜色
+const getImageMainColor = function (saveDir) {
+  return new Promise((resolve, reject) => {
+    Vibrant.from(
+      `${saveDir}/${dayjs().format("YYYY-MM-DD")}_hd.jpg`
+    ).getPalette((err, palette) => {
+      if (err) {
+        logger.error("图片处理失败: 获取主要颜色 " + err);
+        reject(err);
+      }
+      const paletteObj = {};
+      Object.keys(palette).map((item) => {
+        paletteObj[item] = rgbToHex(palette[item].rgb);
+      });
+      logger.info("图片处理成功: 获取主要颜色");
+      resolve(paletteObj);
+    });
   });
 };
 
@@ -87,5 +127,6 @@ module.exports = {
   processImageGrey,
   processImageGauss,
   processImageResize,
-  processImageBase64,
+  getImageBase64,
+  getImageMainColor,
 };

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "serve": "nodemon index.js",
+    "install": "node install/install.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,6 +24,7 @@
     "express": "^4.17.1",
     "jimp": "^0.16.1",
     "log4js": "^6.3.0",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "node-vibrant": "^3.2.1-alpha.1"
   }
 }

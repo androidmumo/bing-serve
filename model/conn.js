@@ -1,7 +1,7 @@
 // 数据库模块
 
 // 导入配置文件
-const { database } = require("../config/config");
+const { databaseConfig } = require("../config/config");
 
 // 导入模块
 const { logger } = require("./log4js"); // 日志模块
@@ -10,10 +10,10 @@ const { logger } = require("./log4js"); // 日志模块
 const mysql = require("mysql");
 
 // 创建一个数据库连接池
-let pool = mysql.createPool(database);
+let pool = mysql.createPool(databaseConfig);
 
 //定义创建数据库链接函数
-const addContent = function (sql, sqlParams) {
+const operateDb = function (sql, sqlParams) {
   return new Promise((resolve, reject) => {
     //使用
     pool.getConnection((err, connection) => {
@@ -36,5 +36,5 @@ const addContent = function (sql, sqlParams) {
 };
 
 module.exports = {
-  addContent,
+  operateDb,
 };
