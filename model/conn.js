@@ -19,14 +19,14 @@ const operateDb = function (sql, sqlParams) {
     pool.getConnection((err, connection) => {
       if (err) {
         logger.error("数据库连接失败 " + err);
-        reject(err);
+        reject({code: 0, data: err});
       } else {
         connection.query(sql, sqlParams, function (err, result) {
           if (err) {
             logger.error("数据库错误 " + err.message);
-            reject(err);
+            reject({code: 0, data: err});
           }
-          resolve(result);
+          resolve({code: 1, data: result});
         });
         //释放
         connection.release();

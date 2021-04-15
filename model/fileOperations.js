@@ -7,7 +7,7 @@ const { logger } = require("./log4js"); // 日志模块
 const fs = require("fs");
 
 // 第三方模块
-const axios = require("axios");
+const Jimp = require("jimp");
 
 // 创建目录
 const createDirectory = async function (dir, recursive) {
@@ -21,18 +21,35 @@ const createDirectory = async function (dir, recursive) {
 };
 
 // 下载图片
-const downloadImage = async function (imgUrl, saveUrl) {
-  await axios({
-    method: "get",
+const downloadImage = function (imgUrl, saveUrl) {
+  Jimp.read({
     url: imgUrl,
-    responseType: "stream",
-  }).then(function (response) {
-    response.data.pipe(fs.createWriteStream(saveUrl));
-    logger.info("图片下载成功: " + imgUrl);
-  });
+  })
+    .then((img) => {
+      logger.info("图片下载成功: " + imgUrl);
+      return img.write(saveUrl);
+    })
+    .catch((err) => {
+      logger.error("图片下载失败: " + err);
+    });
+};
+
+// 同步下载图片
+const downloadImageAsync = async function (imgUrl, saveUrl) {
+  await Jimp.read({
+    url: imgUrl,
+  })
+    .then((img) => {
+      logger.info("图片下载成功(async): " + imgUrl);
+      return img.writeAsync(saveUrl);
+    })
+    .catch((err) => {
+      logger.error("图片下载失败(async): " + err);
+    });
 };
 
 module.exports = {
   createDirectory,
   downloadImage,
+  downloadImageAsync,
 };
