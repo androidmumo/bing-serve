@@ -21,6 +21,7 @@ const {
   downloadImage,
   downloadImageAsync,
 } = require("./model/fileOperations"); // 文件操作模块
+const { errEmitter } = require("./model/eventBus"); // 事件总线
 
 // 使用express框架
 const express = require("express");
@@ -30,6 +31,13 @@ const app = new express();
 const dayjs = require("dayjs");
 
 // ------ 逻辑代码 start------
+// 错误收集器
+let errorList = [];
+let retryTime = 0;
+errEmitter.on("on-error", (error) => {
+  errorList.push(error);
+});
+
 // 并发处理图片
 const processImage = function (saveDir) {
   processImageGrey(saveDir, { quality: 90 });
@@ -41,22 +49,8 @@ const processImage = function (saveDir) {
   // processImageGauss(saveDir, { pixels: 20, quality: 90 });
 };
 
-// 处理数据库返回值
-const reduceRes = function (result) {
-  result.forEach((item) => {
-    item.url = JSON.parse(item.url);
-    item.color = JSON.parse(item.color);
-  });
-  return result;
-};
-// ------ 逻辑代码 end------
-
-// ------ 接口 start------
-// 静态托管
-app.use(`/${static}`, express.static(dir));
-
-// 更新图片
-app.get(`/${UPDATE}`, async function (req, res) {
+// 新增/更新
+const updateBing = async function (req, res) {
   const saveDir = `${dir}/${dayjs().format("YYYY")}/${dayjs().format(
     "MM"
   )}/${dayjs().format("DD")}`;
@@ -112,27 +106,42 @@ app.get(`/${UPDATE}`, async function (req, res) {
       WHERE date='${dayjs().format("YYYY-MM-DD")}'
   `;
   if ((await operateDb(SQL_CHECK, null)).data.length === 0) {
-    operateDb(SQL_INSERT, null)
-      .then((result) => {
-        logger.info("数据写入成功 插入条数: " + result.data.affectedRows);
-        res.send("数据写入成功 插入条数: " + result.data.affectedRows);
-      })
-      .catch((err) => {
-        logger.error("数据写入失败 " + err);
-        res.send("数据写入失败 " + err);
-      });
+    await operateDb(SQL_INSERT, null);
   } else {
-    operateDb(SQL_UPDATE, null)
-      .then((result) => {
-        logger.info("数据更新成功 更新详情: " + result.data.message);
-        res.send("数据更新成功 更新详情: " + result.data.message);
-      })
-      .catch((err) => {
-        logger.error("数据更新失败 " + err);
-        res.send("数据更新失败 " + err);
-      });
+    await operateDb(SQL_UPDATE, null);
   }
-});
+  if (errorList.length === 0) {
+    logger.info("成功");
+    // res.send("成功");
+  } else {
+    if (retryTime >= 3) {
+      retryTime = 0;
+      logger.error("失败 " + errorList);
+      return;
+    }
+    retryTime++;
+    logger.error("发生了错误,正在重试中 次数: " + retryTime);
+    errorList = [];
+    updateBing();
+  }
+};
+
+// 处理数据库返回值
+const reduceRes = function (result) {
+  result.forEach((item) => {
+    item.url = JSON.parse(item.url);
+    item.color = JSON.parse(item.color);
+  });
+  return result;
+};
+// ------ 逻辑代码 end------
+
+// ------ 接口 start------
+// 静态托管
+app.use(`/${static}`, express.static(dir));
+
+// 更新图片
+app.get(`/${UPDATE}`, updateBing);
 
 // 获取图片列表
 app.get(`/${GET_LIST}`, function (req, res) {

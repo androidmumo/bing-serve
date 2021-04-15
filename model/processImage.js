@@ -2,6 +2,7 @@
 
 // 导入模块
 const { logger } = require("./log4js"); // 日志模块
+const { errEmitter } = require("./eventBus"); // 事件总线
 
 // 导入第三方模块
 const dayjs = require("dayjs");
@@ -36,6 +37,7 @@ const processImageGrey = function (saveDir, { quality }) {
         );
     })
     .catch((err) => {
+      errEmitter.emit("on-error", "processImageGrey");
       logger.error("图片处理失败: 灰度 " + err);
     });
 };
@@ -57,6 +59,7 @@ const processImageGauss = function (saveDir, { pixels, quality }) {
         );
     })
     .catch((err) => {
+      errEmitter.emit("on-error", "processImageGauss");
       logger.error("图片处理失败: 高斯模糊 " + err);
     });
 };
@@ -78,6 +81,7 @@ const processImageResize = function (saveDir, { width, height, quality }) {
         );
     })
     .catch((err) => {
+      errEmitter.emit("on-error", "processImageResize");
       logger.error("图片处理失败: 缩放 " + err);
     });
 };
@@ -97,6 +101,7 @@ const getImageBase64 = function (saveDir, { width, height, quality }) {
           });
       })
       .catch((err) => {
+        errEmitter.emit("on-error", "getImageBase64");
         logger.error("图片处理失败: base64 " + err);
         reject(err);
       });
@@ -110,6 +115,7 @@ const getImageMainColor = function (saveDir) {
       `${saveDir}/${dayjs().format("YYYY-MM-DD")}_hd.jpg`
     ).getPalette((err, palette) => {
       if (err) {
+        errEmitter.emit("on-error", "getImageMainColor");
         logger.error("图片处理失败: 获取主要颜色 " + err);
         reject(err);
       }

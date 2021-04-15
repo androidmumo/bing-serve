@@ -2,6 +2,7 @@
 
 // 导入模块
 const { logger } = require("./log4js"); // 日志模块
+const { errEmitter } = require("./eventBus"); // 事件总线
 
 // 导入第三方模块
 const axios = require("axios");
@@ -19,6 +20,7 @@ const getBingJson = function () {
         resolve(response.data);
       })
       .catch((err) => {
+        errEmitter.emit("on-error", "getBingJson");
         logger.error("获取bingJson失败 " + err);
         reject(err);
       });
