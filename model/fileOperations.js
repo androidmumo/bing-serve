@@ -2,7 +2,7 @@
 
 // 导入模块
 const { logger } = require("./log4js"); // 日志模块
-const { errEmitter } = require("./eventBus"); // 事件总线
+const { eventBus } = require("./eventBus"); // 事件总线
 
 // 原生模块
 const fs = require("fs");
@@ -14,7 +14,7 @@ const Jimp = require("jimp");
 const createDirectory = async function (dir, recursive) {
   await fs.mkdir(dir, { recursive }, function (error) {
     if (error) {
-      errEmitter.emit("on-error", "createDirectory");
+      eventBus.emit("on-error", "createDirectory");
       logger.error("创建目录失败 " + error);
       return false;
     }
@@ -32,7 +32,7 @@ const downloadImage = function (imgUrl, saveUrl) {
       return img.write(saveUrl);
     })
     .catch((err) => {
-      errEmitter.emit("on-error", "downloadImage");
+      eventBus.emit("on-error", "downloadImage");
       logger.error("图片下载失败: " + err);
     });
 };
@@ -47,7 +47,7 @@ const downloadImageAsync = async function (imgUrl, saveUrl) {
       return img.writeAsync(saveUrl);
     })
     .catch((err) => {
-      errEmitter.emit("on-error", "downloadImageAsync");
+      eventBus.emit("on-error", "downloadImageAsync");
       logger.error("图片下载失败(async): " + err);
     });
 };

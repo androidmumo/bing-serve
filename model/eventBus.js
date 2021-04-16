@@ -1,10 +1,10 @@
 // 事件总线
 const EventEmitter = require('events');
 
-class ErrEmitter extends EventEmitter {}
+class EventBus extends EventEmitter {}
 
-const errEmitter = new ErrEmitter();
+const eventBus = new EventBus();
 
 module.exports = {
-    errEmitter
+    eventBus
 };

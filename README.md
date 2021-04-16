@@ -22,8 +22,15 @@
 const baseConfig = {
   host: "http://localhost", // 域名 (首尾不能为’/‘)
   port: 3000, // 服务端口号
-  dir: "resources", // 图片保存路径 (相对于根目录、首尾不能为’/‘)
+  dir: "resources", // 图片真实保存路径 (相对于根目录、首尾不能为’/‘)
+  static: "img", // 图片静态托管路径 (url访问图片时的路径、首尾不能为’/‘)
   databaseTable: "bing", // 数据库表名
+};
+
+// API配置(接口url后缀、首尾不能为’/‘)
+const apiConfig = {
+  UPDATE: "update", // 更新图片
+  GET_LIST: "getList", // 获取图片列表
 };
 
 // 数据库配置
@@ -61,3 +68,77 @@ npm run install
 npm run serve
 ```
 
+
+
+### 接口文档
+
+##### GET_LIST 获取列表（分页）
+
+请求方法: `GET`
+
+默认地址: `http://localhost:3000/getList` 
+
+参数(query):
+
+| Key         | Value  | 说明         |
+| ----------- | ------ | ------------ |
+| pageSize    | Number | 每页数据条数 |
+| currentPage | Number | 目标页数     |
+
+请求示例:
+
+```
+http://localhost:3000/getList?pageSize=3&currentPage=2
+```
+
+返回示例:
+
+```json
+{
+    "totle": 10,
+    "list": [
+        {
+            "id": 7,
+            "title": "亚伯拉罕湖中的树，加拿大艾伯塔 (© Coolbiere/Getty Images)",
+            "date": "2021-04-15",
+            "base64": "data:image/jpeg;base64,/9j/4AAQSkZJ...",
+            "url": {
+                "hd": "http://localhost:3000/img/2021/04/15/2021-04-15_hd.jpg",
+                "uhd": "http://localhost:3000/img/2021/04/15/2021-04-15_uhd.jpg",
+                "gaussian": "http://localhost:3000/img/2021/04/15/2021-04-15_hd_gaussian_20.jpg",
+                "greyscale": "http://localhost:3000/img/2021/04/15/2021-04-15_hd_greyscale.jpg",
+                "thumbnail": "http://localhost:3000/img/2021/04/15/2021-04-15_hd_thumbnail_480_270.jpg"
+            },
+            "color": {
+                "Muted": "#5182ac",
+                "Vibrant": "#24a3c8",
+                "DarkMuted": "#314257",
+                "LightMuted": "#93aecb",
+                "DarkVibrant": "#115d7b",
+                "LightVibrant": "#7ec2de"
+            },
+            "timestamp": "2021-04-15T08:34:50.000Z"
+        },
+        {
+        ...
+        },
+        {
+        ...
+        }
+    ]
+}
+```
+
+> ###### 我如何配置接口？
+>
+> 如您在上述配置文件中做了如下设置:
+>
+> > `host` 的值为 `"http://localhost"` 
+> >
+> > `port` 的值为 `3000` 
+> >
+> > `static` 的值为 `"img"` 
+> >
+> > `GET_LIST` 的值为 `"getList"` 
+>
+> 则此接口的真实地址为 `http://localhost:3000/getList` ，下同，不再赘述。

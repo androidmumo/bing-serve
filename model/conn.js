@@ -2,7 +2,7 @@
 
 // 导入配置文件
 const { databaseConfig } = require("../config/config");
-const { errEmitter } = require("./eventBus"); // 事件总线
+const { eventBus } = require("./eventBus"); // 事件总线
 
 // 导入模块
 const { logger } = require("./log4js"); // 日志模块
@@ -19,17 +19,17 @@ const operateDb = function (sql, sqlParams) {
     //使用
     pool.getConnection((err, connection) => {
       if (err) {
-        errEmitter.emit("on-error", "operateDb1");
+        eventBus.emit("on-error", "operateDb1");
         logger.error("数据库连接失败 " + err);
-        reject({code: 0, data: err});
+        reject({ code: 0, data: err });
       } else {
         connection.query(sql, sqlParams, function (err, result) {
           if (err) {
-            errEmitter.emit("on-error", "operateDb2");
+            eventBus.emit("on-error", "operateDb2");
             logger.error("数据库错误 " + err.message);
-            reject({code: 0, data: err});
+            reject({ code: 0, data: err });
           }
-          resolve({code: 1, data: result});
+          resolve({ code: 1, data: result });
         });
         //释放
         connection.release();

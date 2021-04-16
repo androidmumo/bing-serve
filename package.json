@@ -20,6 +20,8 @@
   "homepage": "https://github.com/androidmumo/bing-serve#readme",
   "dependencies": {
     "axios": "^0.21.1",
+    "cors": "^2.8.5",
+    "cron": "^1.8.2",
     "dayjs": "^1.10.4",
     "express": "^4.17.1",
     "jimp": "^0.16.1",

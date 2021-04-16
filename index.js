@@ -21,7 +21,8 @@ const {
   downloadImage,
   downloadImageAsync,
 } = require("./model/fileOperations"); // 文件操作模块
-const { errEmitter } = require("./model/eventBus"); // 事件总线
+const { eventBus } = require("./model/eventBus"); // 事件总线
+const { startUpdateJob } = require("./model/cron"); // 定时任务
 
 // 使用express框架
 const express = require("express");
@@ -29,13 +30,20 @@ const app = new express();
 
 // 第三方模块
 const dayjs = require("dayjs");
+const cors = require("cors");
 
 // ------ 逻辑代码 start------
 // 错误收集器
-let errorList = [];
-let retryTime = 0;
-errEmitter.on("on-error", (error) => {
+let errorList = []; // 错误列表
+let retryTime = 0; // 重试次数
+eventBus.on("on-error", (error) => {
   errorList.push(error);
+});
+
+// 定时任务
+startUpdateJob();
+eventBus.on("to-update", () => {
+  updateBing();
 });
 
 // 并发处理图片
@@ -46,18 +54,21 @@ const processImage = function (saveDir) {
     height: 270,
     quality: 90,
   });
-  // processImageGauss(saveDir, { pixels: 20, quality: 90 });
+  processImageGauss(saveDir, { pixels: 20, quality: 90 });
 };
 
 // 新增/更新
-const updateBing = async function (req, res) {
+const updateBing = async function () {
   const saveDir = `${dir}/${dayjs().format("YYYY")}/${dayjs().format(
     "MM"
   )}/${dayjs().format("DD")}`;
   logger.info("当前时间: " + dayjs());
   logger.info("保存目录: " + saveDir);
+  // 获取bing官方数据
   let bingJson = await getBingJson();
+  // 创建目录
   await createDirectory(saveDir, true);
+  // 下载图片
   await downloadImageAsync(
     "https://cn.bing.com" + bingJson.images[0].url,
     `${saveDir}/${dayjs().format("YYYY-MM-DD")}_hd.jpg`
@@ -66,7 +77,9 @@ const updateBing = async function (req, res) {
     "https://cn.bing.com" + bingJson.images[0].urlbase + "_UHD.jpg",
     `${saveDir}/${dayjs().format("YYYY-MM-DD")}_uhd.jpg`
   );
+  // 处理图片
   processImage(saveDir);
+  // 变量准备
   const mainColor = await getImageMainColor(saveDir);
   const imageBase64 = await getImageBase64(saveDir, {
     width: 16,
@@ -105,11 +118,17 @@ const updateBing = async function (req, res) {
         color='${JSON.stringify(mainColor)}'
       WHERE date='${dayjs().format("YYYY-MM-DD")}'
   `;
+  // 写入数据库
   if ((await operateDb(SQL_CHECK, null)).data.length === 0) {
-    await operateDb(SQL_INSERT, null);
+    await operateDb(SQL_INSERT, null).then((result) => {
+      logger.info("数据库-写入成功");
+    });
   } else {
-    await operateDb(SQL_UPDATE, null);
+    await operateDb(SQL_UPDATE, null).then((result) => {
+      logger.info("数据库-更新成功");
+    });
   }
+  // 重试逻辑
   if (errorList.length === 0) {
     logger.info("成功");
     // res.send("成功");
@@ -122,7 +141,9 @@ const updateBing = async function (req, res) {
     retryTime++;
     logger.error("发生了错误,正在重试中 次数: " + retryTime);
     errorList = [];
-    updateBing();
+    setTimeout(function () {
+      updateBing();
+    }, 10000);
   }
 };
 
@@ -139,6 +160,9 @@ const reduceRes = function (result) {
 // ------ 接口 start------
 // 静态托管
 app.use(`/${static}`, express.static(dir));
+
+// 跨域
+app.use(cors());
 
 // 更新图片
 app.get(`/${UPDATE}`, updateBing);
@@ -167,7 +191,6 @@ app.get(`/${GET_LIST}`, function (req, res) {
       res.send("发生了错误 " + err.data);
     });
 });
-
 // ------ 接口 end------
 
 // 开始监听
