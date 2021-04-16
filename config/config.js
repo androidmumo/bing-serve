@@ -1,3 +1,5 @@
+// 配置文件 config.js
+
 // 基础配置
 const baseConfig = {
   host: "http://localhost", // 域名 (首尾不能为’/‘)
