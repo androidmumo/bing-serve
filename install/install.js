@@ -1,10 +1,10 @@
 // 安装
 
 // 导入配置文件
-const { baseConfig } = require("../config/config");
+const { installConfig } = require("../config/config");
 
 // 初始化配置项
-const { databaseTable } = baseConfig;
+const { databaseTable } = installConfig;
 
 // 导入模块
 const { operateDb } = require("../model/conn"); // 数据库模块

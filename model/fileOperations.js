@@ -8,7 +8,7 @@ const { eventBus } = require("./eventBus"); // 事件总线
 const fs = require("fs");
 
 // 第三方模块
-const Jimp = require("jimp");
+const axios = require("axios");
 
 // 创建目录
 const createDirectory = async function (dir, recursive) {
@@ -24,36 +24,46 @@ const createDirectory = async function (dir, recursive) {
 
 // 下载图片
 const downloadImage = function (imgUrl, saveUrl) {
-  Jimp.read({
+  axios({
+    method: "get",
     url: imgUrl,
+    responseType: "stream",
   })
-    .then((img) => {
+    .then(function (response) {
+      response.data.pipe(fs.createWriteStream(saveUrl));
       logger.info("图片下载成功: " + imgUrl);
-      return img.write(saveUrl);
     })
     .catch((err) => {
-      eventBus.emit("on-error", "downloadImage");
-      logger.error("图片下载失败: " + err);
+      console.log(err)
+      logger.error("图片下载失败 " + err);
     });
 };
 
 // 同步下载图片
-const downloadImageAsync = async function (imgUrl, saveUrl) {
-  await Jimp.read({
-    url: imgUrl,
-  })
-    .then((img) => {
-      logger.info("图片下载成功(async): " + imgUrl);
-      return img.writeAsync(saveUrl);
-    })
-    .catch((err) => {
-      eventBus.emit("on-error", "downloadImageAsync");
-      logger.error("图片下载失败(async): " + err);
+function downloadImageSync(imgUrl, saveUrl) {
+  return new Promise((resolve, reject) => {
+    var writeStream = fs.createWriteStream(saveUrl);
+    axios({
+      method: "get",
+      url: imgUrl,
+      responseType: "stream",
+    }).then(function (response) {
+      response.data.pipe(writeStream);
     });
-};
+    writeStream.on("error", (err) => {
+      logger.error("图片下载失败 " + err);
+      reject(err);
+    });
+    writeStream.on("finish", () => {
+      logger.info("图片下载成功: " + imgUrl);
+      writeStream.end();
+      resolve(true);
+    });
+  });
+}
 
 module.exports = {
   createDirectory,
   downloadImage,
-  downloadImageAsync,
+  downloadImageSync,
 };
