@@ -8,7 +8,7 @@ const {
 } = require("../config/config");
 
 // 初始化配置项
-const { dir } = baseConfig;
+const { dir, retryTimeout } = baseConfig;
 const { databaseTable } = installConfig;
 const { dbHost, dbPort, static } = apiBaseConfig;
 
@@ -23,11 +23,7 @@ const {
 const { logger } = require("./log4js"); // 日志模块
 const { operateDb } = require("./conn"); // 数据库模块
 const { getBingJson } = require("./request"); // 请求外部接口模块
-const {
-  createDirectory,
-  downloadImage,
-  downloadImageSync,
-} = require("./fileOperations"); // 文件操作模块
+const { createDirectorySync, downloadImageSync } = require("./fileOperations"); // 文件操作模块
 const { eventBus } = require("./eventBus"); // 事件总线
 
 // 第三方模块
@@ -61,7 +57,7 @@ const updateBing = async function () {
   // 获取bing官方数据
   let bingJson = await getBingJson();
   // 创建目录
-  await createDirectory(saveDir, true);
+  await createDirectorySync(saveDir, true);
   // 下载图片
   await downloadImageSync(
     "https://cn.bing.com" + bingJson.images[0].url,
@@ -137,7 +133,7 @@ const updateBing = async function () {
     errorList = [];
     setTimeout(function () {
       updateBing();
-    }, 10000);
+    }, retryTimeout);
   }
 };
 

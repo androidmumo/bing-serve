@@ -22,6 +22,11 @@ const createDirectory = async function (dir, recursive) {
   });
 };
 
+// 同步创建目录
+const createDirectorySync = function (dir, recursive) {
+  fs.mkdirSync(dir, { recursive });
+};
+
 // 下载图片
 const downloadImage = function (imgUrl, saveUrl) {
   axios({
@@ -34,7 +39,7 @@ const downloadImage = function (imgUrl, saveUrl) {
       logger.info("图片下载成功: " + imgUrl);
     })
     .catch((err) => {
-      console.log(err)
+      console.log(err);
       logger.error("图片下载失败 " + err);
     });
 };
@@ -64,6 +69,7 @@ function downloadImageSync(imgUrl, saveUrl) {
 
 module.exports = {
   createDirectory,
+  createDirectorySync,
   downloadImage,
   downloadImageSync,
 };
