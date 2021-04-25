@@ -18,7 +18,12 @@ function componentToHex(num) {
 
 // 将rgb颜色转换为16进制颜色
 function rgbToHex([r, g, b]) {
-  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+  return (
+    "#" +
+    componentToHex(Math.round(r)) +
+    componentToHex(Math.round(g)) +
+    componentToHex(Math.round(b))
+  );
 }
 // ------ 逻辑函数 end ------
 

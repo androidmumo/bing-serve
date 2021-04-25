@@ -62,8 +62,20 @@ app.get(`/${UPDATE}`, updateBingByChildProcess);
 
 // 获取图片列表
 app.get(`/${GET_LIST}`, function (req, res) {
-  const pageSize = req.query?.pageSize;
-  const currentPage = req.query?.currentPage - 1;
+  // sql注入过滤
+  let pageSize = isNaN(parseInt(req.query?.pageSize))
+    ? 1
+    : parseInt(req.query?.pageSize);
+  let currentPage = isNaN(parseInt(req.query?.currentPage))
+    ? 0
+    : parseInt(req.query?.currentPage) - 1;
+  // 限制查询范围
+  if (pageSize <= 0) {
+    pageSize = 1;
+  }
+  if (currentPage <= 0) {
+    currentPage = 1;
+  }
   const SQL_GET_LIST = `
   SELECT *
   FROM ${databaseTable}
