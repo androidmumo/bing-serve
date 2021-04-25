@@ -73,8 +73,8 @@ app.get(`/${GET_LIST}`, function (req, res) {
   if (pageSize <= 0) {
     pageSize = 1;
   }
-  if (currentPage <= 0) {
-    currentPage = 1;
+  if (currentPage < 0) {
+    currentPage = 0;
   }
   const SQL_GET_LIST = `
   SELECT *
