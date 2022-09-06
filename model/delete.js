@@ -7,7 +7,7 @@ const {
 } = require("../config/config");
 
 // 初始化配置项
-const { surviveDays, retryTimeout } = baseConfig;
+const { dir, surviveDays, retryTimeout } = baseConfig;
 const { databaseTable } = installConfig;
 
 // 导入模块
