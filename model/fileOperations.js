@@ -6,6 +6,7 @@ const { eventBus } = require("./eventBus"); // 事件总线
 
 // 原生模块
 const fs = require("fs");
+const path = require('path')
 
 // 第三方模块
 const axios = require("axios");
