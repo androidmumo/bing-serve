@@ -4,7 +4,8 @@
   "description": "### 使用 node.js 构建的必应每日一图服务端",
   "main": "index.js",
   "scripts": {
-    "serve": "nodemon index.js",
+    "serve": "node index.js",
+    "dev": "nodemon index.js",
     "install": "node install/install.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
