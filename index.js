@@ -63,11 +63,19 @@ app.use(`/${static}`, express.static(dir));
 // 跨域
 app.use(cors());
 
-// 更新图片
-app.get(`/${UPDATE}`, updateBingByChildProcess);
+// 开发环境api
+const allowApi = () => {
+  // 更新图片
+  app.get(`/${UPDATE}`, updateBingByChildProcess);
 
-// 清理图片
-app.get(`/${DELETE}`, deleteBingByChildProcess);
+  // 清理图片
+  app.get(`/${DELETE}`, deleteBingByChildProcess);
+}
+
+const args = process.argv.splice(2);
+if (args.includes('dev')) {
+  allowApi();
+}
 
 // 获取图片列表
 app.get(`/${GET_LIST}`, function (req, res) {

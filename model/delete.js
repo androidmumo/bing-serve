@@ -27,6 +27,7 @@ eventBus.on("on-error", (error) => {
 });
 
 const deleteExpired = async () => {
+	if (surviveDays <= 0) return; // 小于等于0则不清理
 	const expiredDate = dayjs().subtract(surviveDays, 'day');
 	const expiredDir = `${dir}/${expiredDate.format("YYYY")}/${expiredDate.format(
 		"MM"

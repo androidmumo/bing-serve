@@ -5,7 +5,7 @@ const baseConfig = {
   port: 3000, // 服务启动端口号
   dir: "resources", // 图片在服务端的真实保存路径 (相对于根目录、首尾不能为’/‘)
   updateTime: "00:01:00", // 每天更新时间
-  surviveDays: 7, // 图片存活天数（即图片保存多少天）
+  surviveDays: 7, // 图片存活天数（即图片保存多少天，到期即清理） 0为不清理
   retryTimeout: 10000, // 错误重试间隔 (单位:ms)
 };
 
