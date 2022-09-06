@@ -36,7 +36,7 @@ const deleteExpired = async () => {
 	delDirectory(expiredDir);
 
 	// 清理数据库数据
-	const SQL_DELETE = `DELETE FROM ${databaseTable} WHERE date=${expiredDate.format("YYYY-MM-DD")};`
+	const SQL_DELETE = `DELETE FROM ${databaseTable} WHERE date=${expiredDate.format("YYYY-MM-DD")}`
 	await operateDb(SQL_DELETE, null).then((result) => {
 		logger.info("数据库-(清理)写入成功");
 	});
