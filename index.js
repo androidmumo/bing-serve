@@ -7,7 +7,7 @@ const {
 } = require("./config/config");
 
 // 初始化配置项
-const { port, dir } = baseConfig;
+const { port, dir, DelayTime } = baseConfig;
 const { databaseTable } = installConfig;
 const { static } = apiBaseConfig;
 const { UPDATE, DELETE, GET_LIST } = apiConfig;
@@ -21,12 +21,13 @@ const { startUpdateJob } = require("./model/cron"); // 定时任务
 // 原生模块
 const childProcess = require("child_process");
 
+// 第三方模块
+const dayjs = require("dayjs");
+const cors = require("cors");
+
 // 使用express框架
 const express = require("express");
 const app = new express();
-
-// 第三方模块
-const cors = require("cors");
 
 // ------ 逻辑代码 start------
 // 定时任务
@@ -76,6 +77,17 @@ const args = process.argv.splice(2);
 if (args.includes('dev')) {
   allowApi();
 }
+
+const getAvatar = (req, res) => {
+  const afterDelayTime = dayjs().add(DelayTime, 'minute');
+  const saveDir = `${dir}/${afterDelayTime.format("YYYY")}/${afterDelayTime.format(
+    "MM"
+  )}/${afterDelayTime.format("DD")}`;
+  const fileDir = `${saveDir}/${afterDelayTime.format("YYYY-MM-DD")}_hd.jpg`;
+  res.sendFile(process.cwd() + "/" + fileDir);
+}
+
+app.get('/', getAvatar);
 
 // 获取图片列表
 app.get(`/${GET_LIST}`, function (req, res) {
