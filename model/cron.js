@@ -12,11 +12,11 @@ const { eventBus } = require("./eventBus"); // 事件总线
 // 第三方模块
 const CronJob = require("cron").CronJob;
 
-// 处理updateTime
+// 处理 updateTime
 const updateTimeArr = updateTime.split(":");
 const updateTimeCron = `${updateTimeArr[2]} ${updateTimeArr[1]} ${updateTimeArr[0]} * * *`;
 
-// 每天的凌晨 0点0分0秒触发  （每天触发一次）
+// 创建定时任务函数
 const updateJob = new CronJob(updateTimeCron, function () {
   eventBus.emit("to-update");
 });

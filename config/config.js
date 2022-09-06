@@ -5,6 +5,7 @@ const baseConfig = {
   port: 3000, // 服务启动端口号
   dir: "resources", // 图片在服务端的真实保存路径 (相对于根目录、首尾不能为’/‘)
   updateTime: "00:01:00", // 每天更新时间
+  surviveDays: 7, // 图片存活天数（即图片保存多少天）
   retryTimeout: 10000, // 错误重试间隔 (单位:ms)
 };
 
@@ -23,6 +24,7 @@ const apiBaseConfig = {
 // API接口后缀配置(接口url后缀、首尾不能为’/‘)
 const apiConfig = {
   UPDATE: "update", // 手动更新图片
+  DELETE: "delete", // 手动清理图片
   GET_LIST: "getList", // 获取图片列表
 };
 

@@ -10,7 +10,7 @@ const {
 const { port, dir } = baseConfig;
 const { databaseTable } = installConfig;
 const { static } = apiBaseConfig;
-const { UPDATE, GET_LIST } = apiConfig;
+const { UPDATE, DELETE, GET_LIST } = apiConfig;
 
 // 导入模块
 const { logger } = require("./model/log4js"); // 日志模块
@@ -33,11 +33,17 @@ const cors = require("cors");
 startUpdateJob();
 eventBus.on("to-update", () => {
   updateBingByChildProcess();
+  deleteBingByChildProcess();
 });
 
 // 用子进程更新图片
 const updateBingByChildProcess = function () {
   childProcess.fork("./model/update.js");
+};
+
+// 用子进程清理图片
+const deleteBingByChildProcess = function () {
+  childProcess.fork("./model/delete.js");
 };
 
 // 处理数据库返回值
@@ -59,6 +65,9 @@ app.use(cors());
 
 // 更新图片
 app.get(`/${UPDATE}`, updateBingByChildProcess);
+
+// 清理图片
+app.get(`/${DELETE}`, deleteBingByChildProcess);
 
 // 获取图片列表
 app.get(`/${GET_LIST}`, function (req, res) {

@@ -8,7 +8,7 @@ log4js.configure({
     fileout: {
       type: "file",
       filename: "./log/fileout.log",
-      maxLogSize: 102400,
+      maxLogSize: 10240,
     },
     consoleout: { type: "console" },
   },
