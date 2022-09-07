@@ -17,7 +17,7 @@ const installConfig = {
 
 // API基础配置 (此处信息要写入数据库，真实、外部可访问的)
 const apiBaseConfig = {
-  dbHost: "https://bing.api.mcloc.cn", // 域名 (首尾不能为’/‘)
+  dbHost: "https://api.mcloc.cn/bing", // 域名 (首尾不能为’/‘)
   dbPort: 80, // 外部访问端口号
   static: "img", // 图片静态托管路径 (url访问图片时的路径、首尾不能为’/‘)
 }
