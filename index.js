@@ -79,7 +79,7 @@ if (args.includes('dev')) {
 }
 
 const getAvatar = (req, res) => {
-  const afterDelayTime = dayjs().add(DelayTime, 'minute');
+  const afterDelayTime = dayjs().subtract(DelayTime, 'minute');
   const saveDir = `${dir}/${afterDelayTime.format("YYYY")}/${afterDelayTime.format(
     "MM"
   )}/${afterDelayTime.format("DD")}`;
