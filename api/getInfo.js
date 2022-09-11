@@ -31,8 +31,8 @@ const getInfo = (req, res) => {
 			});
 		})
 		.catch((err) => {
-			logger.error("发生了错误 " + err.data);
-			res.send("发生了错误 " + err.data);
+			logger.error("发生了错误 " + err);
+			res.send("发生了错误 " + err);
 		});
 }
 
