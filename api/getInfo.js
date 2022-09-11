@@ -1,14 +1,14 @@
 // 导入配置文件
 const {
 	installConfig,
-} = require("./config/config");
+} = require("../config/config");
 
 // 初始化配置项
 const { databaseTable } = installConfig;
 
 // 导入模块
-const { logger } = require("./model/log4js"); // 日志模块
-const { operateDb } = require("./model/conn"); // 数据库模块
+const { logger } = require("../model/log4js"); // 日志模块
+const { operateDb } = require("../model/conn"); // 数据库模块
 
 const { reduceRes } = require("../utils/reduceRes");
 
