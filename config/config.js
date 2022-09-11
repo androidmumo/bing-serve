@@ -27,6 +27,7 @@ const apiConfig = {
   UPDATE: "update", // 手动更新图片
   DELETE: "delete", // 手动清理图片
   GET_LIST: "getList", // 获取图片列表
+  GET_INFO: "getInfo", // 获取图片详情
 };
 
 // 数据库配置 (注意：除数据库连接池大小外，以下配置项提及的内容需在安装前准备好并填入)
