@@ -27,7 +27,7 @@ const getInfo = (req, res) => {
 	Promise.all([info])
 		.then((values) => {
 			res.send({
-				info: reduceRes(values[1].data)[0],
+				info: reduceRes(values[0].data)[0],
 			});
 		})
 		.catch((err) => {
