@@ -129,12 +129,7 @@ http://localhost:3000/getList?pageSize=3&currentPage=2
             },
             "timestamp": "2021-04-15T08:34:50.000Z"
         },
-        {
-        ...
-        },
-        {
-        ...
-        }
+        // more...
     ]
 }
 ```
