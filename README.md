@@ -103,7 +103,7 @@ http://localhost:3000/getList?pageSize=3&currentPage=2
 
 返回示例:
 
-```json
+```javascript
 {
     "totle": 10,
     "list": [
