@@ -1,8 +1,10 @@
+# 本仓库已合并入 https://github.com/androidmumo/bing 烦请移步。后续将在新的仓库维护，并提供前后端均包含的docker版本。
+
 # bing-serve
 
 ### 使用 node.js 构建的必应每日一图服务端
 
-> 前端仓库: https://github.com/androidmumo/bing-vue
+> 前端仓库: https://github.com/androidmumo/bing
 
 
 
