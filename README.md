@@ -1,4 +1,4 @@
-# 本仓库已合并入 https://github.com/androidmumo/bing 烦请移步。后续将在新的仓库维护，并提供前后端均包含的docker版本。
+# ⚠️本仓库已合并入 https://github.com/androidmumo/bing 烦请移步。后续将在新的仓库维护，并提供前后端均包含的docker版本。
 
 # bing-serve
 
